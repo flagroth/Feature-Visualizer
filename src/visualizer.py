@@ -113,6 +113,6 @@ if __name__ == '__main__':
     g1 = make_plot(source_points, comp_lda, train_x.columns,"LDA")
     g2 = make_plot(source_points, method="TSNE")
     p = gridplot([[g0,g1,g2]])
-	save(p, filename = "../plots/PCA_LDA_TSNE.html", title = "TFM")
-	return(0)
+    save(p, filename = "../plots/PCA_LDA_TSNE.html", title = "TFM")
+    return(0)
 
