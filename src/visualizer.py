@@ -1,29 +1,17 @@
 
 # coding: utf-8
 
-# In[1]:
-
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import normalize
 from sklearn.manifold import TSNE
 
 import pandas as pd
-#import matplotlib.pyplot as plt
-#from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 from bokeh.io import output_notebook, show
 from bokeh.plotting import figure, gridplot
 from bokeh.charts import Scatter
 from bokeh.models import ColumnDataSource,HoverTool
-
-
-# In[ ]:
-
-output_notebook()
-
-
-# In[2]:
 
 def data_prep():
     dataset = pd.read_csv("../data/dataset_attributes.csv")
@@ -47,10 +35,7 @@ def data_prep():
     return ({"train_x":train_x,"train_y":train_y,"train_names":train_names,"train_photo":train_photo,
              "test_x":test_x,"test_y":test_y,"test_names":test_names,"test_photo":test_photo})
 
-
-# In[ ]:
-
-def make_plot(source_points, compo, columns, method):
+def make_plot(source_points, compo=None, columns=None, method=None):
     colors = ['navy', 'turquoise', 'darkorange']
     target_names = ['Bueno','Regular','Malo']
     
@@ -68,8 +53,8 @@ def make_plot(source_points, compo, columns, method):
     """)
     
     p = figure(tools = [hover,"pan,wheel_zoom,box_select,lasso_select,reset"], width = 300, height = 300, title=method+" FIFA 18")
-    if method=='':
-        return 1
+    if method is None:
+        return(1)
     if method=='PCA':
         x='x_pca'
         y='y_pca'
@@ -80,18 +65,20 @@ def make_plot(source_points, compo, columns, method):
         y='y_lda'
         compo_x='comp_lda_x'
         compo_y='comp_lda_y'
+    if method=='TSNE':
+        x='x_tsne'
+        y='y_tsne'
+        
     color = []
     for i in train_y.astype(int):
         color.append(colors[i])        
     p.circle(x, y , source = source_points, color = color, alpha=.8)#X_r[y == i, 0], X_r[y == i, 1], color=color)
     #p.line(compo_x, compo_y, source = source_lines, color = 'red')
-    for a,b,label in zip(compo[0,:],compo[1,:],columns):
-        p.line([0,a],[0,b], color = 'red')
-        p.text([a],[b],text=[label], text_align="center")
+    if compo is not None:
+        for a,b,label in zip(compo[0,:],compo[1,:],columns):
+            p.line([0,a],[0,b], color = 'red')
+            p.text([a],[b],text=[label], text_align="center")
     return(p)
-
-
-# In[ ]:
 
 if __name__ == '__main__':
     data=data_prep()
@@ -107,8 +94,8 @@ if __name__ == '__main__':
     lda = LDA(n_components=2)
     X_r_lda = lda.fit(train_x,train_y).transform(train_x)
     comp_lda = lda.coef_
-    y_predict_lda = lda.predict(test_x)
-    X_r_lda_test = lda.fit(test_x,y_predict).transform(test_x)
+    #y_predict_lda = lda.predict(test_x)
+    #X_r_lda_test = lda.fit(test_x,y_predict_lda).transform(test_x)
     
     #Making t-SNE
     tsne = TSNE(n_components=2)
@@ -117,36 +104,15 @@ if __name__ == '__main__':
     source_points = ColumnDataSource(data=dict(
         x_pca=X_r_pca[:,0], y_pca=X_r_pca[:,1], 
         x_lda=X_r_lda[:,0], y_lda=X_r_lda[:,1],
+        x_tsne=X_r_tsne[:,0], y_tsne=X_r_tsne[:,1],
         desc=train_names,
         imgs=train_photo
     ))
     
     g0 = make_plot(source_points, comp_pca, train_x.columns,"PCA")
     g1 = make_plot(source_points, comp_lda, train_x.columns,"LDA")
-    p = gridplot([[g0,g1]])
-    show(p)
-    #return 0
-
-
-# In[4]:
-
-data=data_prep()
-train_x,train_y,train_names,train_photo,test_x,test_y,test_names,test_photo = data.values()
-
-
-# In[ ]:
-
-#Making t-SNE
-tsne = TSNE(n_components=2,n_iter=250)
-X_r_tsne = tsne.fit_transform(train_x)
-
-
-# In[8]:
-
-train_x.shape
-
-
-# In[ ]:
-
-
+    g2 = make_plot(source_points, method="TSNE")
+    p = gridplot([[g0,g1,g2]])
+	save(p, filename = "../plots/PCA_LDA_TSNE.html", title = "TFM")
+	return(0)
 
