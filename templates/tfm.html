@@ -1,0 +1,35 @@
+<html>
+<head>
+<link
+    href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.5.min.css"
+    rel="stylesheet" type="text/css">
+<link
+    href="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.5.min.css"
+    rel="stylesheet" type="text/css">
+
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.5.min.js"></script>
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.5.min.js"></script>
+
+</head>
+<body>
+<H1>Feature visualizator</H1>
+
+<form action='/' method="post">
+<b>Feature selection:</b></br>
+	{% for feature in feature_names %}
+	    <label><input type="checkbox" name="feature" value="{{ feature }}">{{ feature }}</label></br>
+	{% endfor %}
+<b>Visualizations:</b></br>
+		<label><input type="checkbox" name="viz" value="PCA">PCA</label></br>
+		<label><input type="checkbox" name="viz" value="LDA">LDA</label></br>
+		<label><input type="checkbox" name="viz" value="TSNE">t-SNE</label></br>
+<button type='submit'>Submit</button>
+</form>
+
+{{ script|safe }}
+{{ div|safe }}
+
+</body>
+</html>
+
+
