@@ -1,0 +1,45 @@
+<html>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='cerulean.min.css') }}">
+<title>Feature Visualizer</title>
+<head>
+<link
+    href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.14.min.css"
+    rel="stylesheet" type="text/css">
+<link
+    href="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.14.min.css"
+    rel="stylesheet" type="text/css">
+
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.14.min.js"></script>
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.14.min.js"></script>
+
+</head>
+<body>
+<H1>Feature visualizer</H1>
+
+<div class=""panel panel-default"">
+	<div class="panel-body">
+		<form action='/visualize' method="post">
+		<b>Feature selection:</b></br>
+			{% for feature in feature_names %}
+				<label><input type="checkbox" name="feature" value="{{ feature }}" checked>{{ feature }}</label></br>
+			{% endfor %}
+		<b>Visualizations:</b></br>
+				<label><input type="checkbox" name="viz" value="PCA">PCA</label></br>
+				<label><input type="checkbox" name="viz" value="LDA">LDA</label></br>
+				<label><input type="checkbox" name="viz" value="TSNE">t-SNE</label>
+				<label>Iterations (min=200): <input type="text" name="tsne_iter" value="300"></label></br>
+				<label><input type="checkbox" name="viz" value="MDS" >MDS</label>
+				<label>Max. Iterations (Warning: SLOW!!): <input type="text" name="mds_iter" value="5"></label></br>
+				<label><input type="checkbox" name="viz" value="RANDOM" >Random projection</label></br>
+		<button type='submit'>Submit</button>
+		</form>
+	</div>
+	<div class="panel-body">
+		{{ script|safe }}
+		{{ div|safe }}
+	</div>
+</div>
+</body>
+</html>
+
+
