@@ -14,16 +14,19 @@
 
 </head>
 <body>
+<div class="container-fluid">
 <H1>Feature visualizer</H1>
-
-<div class=""panel panel-default"">
-	<div class="panel-body">
-		<form action='/visualize' method="post">
-		<b>Feature selection:</b></br>
-			{% for feature in feature_names %}
-				<label><input type="checkbox" name="feature" value="{{ feature }}" checked>{{ feature }}</label></br>
-			{% endfor %}
-		<b>Visualizations:</b></br>
+	<div class="row">
+		<div class="col-sm-3">
+			<div class="panel-body">
+				<form action='/visualize' method="post">
+				<b>Feature selection:</b></br>
+					{% for feature in feature_names %}
+						<label><input type="checkbox" name="feature" value="{{ feature }}" checked>{{ feature }}</label></br>
+					{% endfor %}
+			</div>
+			<div class="panel-body">
+				<b>Visualizations:</b></br>
 				<label><input type="checkbox" name="viz" value="PCA">PCA</label></br>
 				<label><input type="checkbox" name="viz" value="LDA">LDA</label></br>
 				<label><input type="checkbox" name="viz" value="TSNE">t-SNE</label>
@@ -31,14 +34,17 @@
 				<label><input type="checkbox" name="viz" value="MDS" >MDS</label>
 				<label>Max. Iterations (Warning: SLOW!!): <input type="text" name="mds_iter" value="5"></label></br>
 				<label><input type="checkbox" name="viz" value="RANDOM" >Random projection</label></br>
-		<button type='submit'>Submit</button>
-		</form>
-	</div>
-	<div class="panel-body">
-		{{ script|safe }}
-		{{ div|safe }}
+				<button type='submit'>Submit</button>
+				</form>
+			</div>
+		</div>
+		<div class="col-sm-8">
+			{{ script|safe }}
+			{{ div|safe }}
+		</div>
 	</div>
 </div>
+
 </body>
 </html>
 
