@@ -17,8 +17,7 @@ import pandas as pd
 import numpy as np
 from bokeh.io import output_notebook, show
 from bokeh.plotting import figure, gridplot
-#from bokeh.charts import Scatter
-from bokeh.models import ColumnDataSource,HoverTool
+from bokeh.models import ColumnDataSource, HoverTool
 from bokeh.embed import components
 from bokeh.palettes import Category20
 
@@ -50,42 +49,44 @@ def data_prep(filename=_filename, target=_target, separator=_separator, train_pc
 	y = dataset[target]
 
 	dataset=dataset.drop(target, axis=1)
+	data_columns = dataset.columns
+	
 	if features is not None:
 		x = dataset[features]
 	else:
 		x = dataset
-
-	data_columns = dataset.columns
+		
 	x = x.apply(pd.to_numeric, errors='coerce')
 	x = (x - x.mean()) / (x.max() - x.min())
 	msk = np.random.rand(len(x)) < train_pct/100
+	
 	train_x = x[msk]
 	train_y = y[msk]
 	test_x = x[~msk]
 	test_y = y[~msk]
-
+	
 	return ({"data_columns":data_columns,
 			"train_x":train_x,
 			"train_y":train_y,
 			"test_x":test_x,
 			"test_y":test_y
 			})
+	
 
 # Plot drawing
-def make_plot(source_points, compo=None, columns=None, method=None, accuracy=0):  
-	hover = HoverTool(tooltips=[
-		("desc", "@id"),
-	])
-
-	p = figure(tools = ["hover,pan,wheel_zoom,box_select,lasso_select,reset"], width = 300, height = 300, title=method + ". Acc: " + str(accuracy), sizing_mode='scale_width')
+def make_plot(source_points, source_points_test, compo=None, columns=None, method=None, accuracy=0):  
+	p = figure(tools = ["pan,wheel_zoom,box_select,lasso_select,reset"], width = 300, height = 300, title=method + ". Acc: " + str(accuracy), sizing_mode='scale_width')
 	x = 'x_' + method.lower()
 	y = 'y_' + method.lower()
+	t_x = 'x_test_' + method.lower()
+	t_y = 'y_test_' + method.lower()
 	compo_x = 'comp_' + method.lower() + '_x'
 	compo_y = 'comp_' + method.lower() + '_y'
 	
 	p.circle(x=x, y=y , source = source_points, alpha=.8, fill_color='colors', line_color='colors')
-	# In linear methods we can show components
-	if method in ['PCA','LDA','RANDOM']:
+	if method in ['PCA','LDA','RANDOM']:	
+		p.cross(x=t_x, y=t_y, source = source_points_test, alpha=.8, fill_color='colors_'+method.lower(), line_color='colors_'+method.lower(), size=8)
+		# In linear methods we can show components
 		for a,b,label in zip(compo[0,:],compo[1,:],columns):
 			p.line([0,a],[0,b], color = 'red')
 			p.text([a],[b],text=[label], text_align="center")
@@ -140,6 +141,7 @@ def features(filename,target,separator,train_pct):
 	_train_pct=int(train_pct)
 
 	data=data_prep(_filename,_target,_separator,_train_pct)
+
 	data_columns,train_x,train_y,test_x,test_y = data.values()
 	return render_template("visualizer.html", feature_names=train_x.columns, filename=filename, target=target)
 
@@ -150,15 +152,20 @@ def visualize():
 	if len(features)==0:
 		features=None
 	data=data_prep(_filename, _target, _separator, _train_pct, features)
+	
+	dataSource=dict()
+	dataSource_test=dict()
+	
 	data_columns,train_x,train_y,test_x,test_y = data.values()
-	print(train_x.columns)
 	
 	vizs = request.form.getlist('viz')
 	print(vizs)
-	
-	dataSource=dict()
-	#dataSource['photo'] = data[photo]
-	
+	color = Category20[20]
+	colors = []
+	for i in train_y.astype(int):
+		colors.append(color[i]) 
+		
+	dataSource['colors']=colors
 	clf = SVC(kernel = 'linear')
 	if "PCA" in vizs:
 		print("Making PCA")
@@ -171,6 +178,12 @@ def visualize():
 		acc_pca = accuracy_score(test_y, y_predict_pca)
 		dataSource['x_pca'] = X_r_pca[:,0]
 		dataSource['y_pca'] = X_r_pca[:,1]
+		dataSource_test['x_test_pca'] = X_r_pca_test[:,0]
+		dataSource_test['y_test_pca'] = X_r_pca_test[:,1]
+		colors_pca = []
+		for i in y_predict_pca.astype(int):
+			colors_pca.append(color[i]) 		
+		dataSource_test['colors_pca'] = colors_pca
 	
 	if "LDA" in vizs:
 		print("Making LDA")
@@ -182,6 +195,12 @@ def visualize():
 		X_r_lda_test = lda.fit(test_x,y_predict_lda).transform(test_x)
 		dataSource['x_lda'] = X_r_lda[:,0]
 		dataSource['y_lda'] = X_r_lda[:,1]
+		dataSource_test['x_test_lda'] = X_r_lda_test[:,0]
+		dataSource_test['y_test_lda'] = X_r_lda_test[:,1]
+		colors_lda = []
+		for i in y_predict_lda.astype(int):
+			colors_lda.append(color[i]) 		
+		dataSource_test['colors_lda'] = colors_lda
 
 	if "RANDOM" in vizs:
 		print("Making RANDOM")
@@ -195,6 +214,13 @@ def visualize():
 		acc_random = accuracy_score(test_y, y_predict_random)	   
 		dataSource['x_random'] = X_r_random[:,0]
 		dataSource['y_random'] = X_r_random[:,1]
+		dataSource_test['x_test_random'] = X_r_random_test[:,0]
+		dataSource_test['y_test_random'] = X_r_random_test[:,1]
+		colors_random = []
+		for i in y_predict_random.astype(int):
+			colors_random.append(color[i]) 		
+		dataSource_test['colors_random'] = colors_random
+		
 	
 	if "TSNE" in vizs:
 		print("Making t-SNE")
@@ -215,32 +241,25 @@ def visualize():
 		X_r_mds = mds.fit_transform(train_x)
 		dataSource['x_mds'] = X_r_mds[:,0]
 		dataSource['y_mds'] = X_r_mds[:,1]
-	
-	print("Coloring")
-	color = Category20[20]
-	print(np.unique(train_y.astype(int)))
-	print(color)
-	colors = []
-	for i in train_y.astype(int):
-		colors.append(color[i]) 
-		
-	dataSource['colors']=colors
+
+
 	source_points = ColumnDataSource(data=dataSource)
+	source_points_test = ColumnDataSource(data=dataSource_test)
 	   
 	g=[]
 	print("Plotting")
 	if "PCA" in vizs:
-		g.append(make_plot(source_points, comp_pca, train_x.columns, "PCA", acc_pca))
+		g.append(make_plot(source_points, source_points_test, comp_pca, train_x.columns, "PCA", acc_pca))
 	if "LDA" in vizs:
-		g.append(make_plot(source_points, comp_lda, train_x.columns, "LDA", acc_lda))
+		g.append(make_plot(source_points, source_points_test, comp_lda, train_x.columns, "LDA", acc_lda))
 	if "RANDOM" in vizs:	
-		g.append(make_plot(source_points, comp_random, train_x.columns, "RANDOM", acc_random))		
+		g.append(make_plot(source_points, source_points_test, comp_random, train_x.columns, "RANDOM", acc_random))		
 	if "TSNE" in vizs:	
-		g.append(make_plot(source_points, method="TSNE", accuracy = 0))
+		g.append(make_plot(source_points, source_points_test, method="TSNE", accuracy = 0))
 	if "MDS" in vizs:	
-		g.append(make_plot(source_points, method="MDS", accuracy = 0))
+		g.append(make_plot(source_points, source_points_test, method="MDS", accuracy = 0))
 	
-	p = gridplot(g, ncols=1, plot_width=600, plot_height=600, sizing_mode='scale_width')
+	p = gridplot(g, ncols=1, plot_width=600, plot_height=600, sizing_mode='scale_width', merge_tools = False)
 	script, div = components(p)
 	return render_template("visualizer.html",feature_names=data_columns, script=script, div=div)
 	
