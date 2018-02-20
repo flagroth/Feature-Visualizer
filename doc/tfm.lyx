@@ -1,0 +1,464 @@
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass report
+\use_default_options true
+\maintain_unincluded_children false
+\language spanish
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\float_placement H
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation skip
+\defskip smallskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Trabajo Fin de Máster
+\end_layout
+
+\begin_layout Abstract
+Visualizador...
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Chapter
+Introducción
+\end_layout
+
+\begin_layout Standard
+El universo que habitamos es tetradimensional, es decir, tiene tres dimensiones
+ espaciales y una temporal.
+ Esto nos limita a la hora de poder visualizar objetos (o datos) de mayor
+ dimensión, debido a nuestra incapacidad física de poder imaginar más de
+ tres dimensiones espaciales.
+ Es uso habitual el realizar proyecciones de objetos tridimensionales a
+ bidimensionales.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename C:/Users/e6840810/Desktop/memoria_tfm/img/cubo.jpg
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Cubo en 2 dimensiones
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+En Machine Learning la reducción de dimensionalidad es el proceso de reducir
+ el número de variables de un conjunto a un subconjunto de variables manteniendo
+ la mayor cantidad de información posible.
+ La transformación de datos puede ser lineal o no lineal.
+ 
+\end_layout
+
+\begin_layout Section
+Algoritmos lineales
+\end_layout
+
+\begin_layout Standard
+Estos algoritmos buscan un sistema de referencia de dimensión inferior al
+ original sobre el que proyectar el conjunto de datos.
+ El criterio para encontrar ese sistema de referencia depende del algoritmo.
+ 
+\end_layout
+
+\begin_layout Standard
+En los algoritmos lineales, se puede observar cómo cada una de las variables
+ forma parte de la nueva proyección.
+ En estos algoritmos se obtienen componentes lineales, formadas por un escalar
+ y un ángulo, que permiten explicar cómo cada variable es tomada en cuenta
+ a la hora de crear el nuevo sistema de referencia.
+\end_layout
+
+\begin_layout Standard
+Como ejemplo para ilustrar cada uno de los algoritmos usaremos el conjunto
+ Iris, porque es uno de los datasets más conocidos en la bibliografía.
+ Consta de 150 observaciones de plantas tipo Iris divididas en tres clases
+ (Setosa, Versicolor y Virginica).
+ Para cada una de las observaciones se dispone de cuatro medidas (variables)
+ de la longitud y anchura de sus sépalos y los pétalos.
+\end_layout
+
+\begin_layout Standard
+Entre los más conocidos están:
+\end_layout
+
+\begin_layout Subsection*
+Principal Component Analysis
+\end_layout
+
+\begin_layout Standard
+Busca la proyección en la que los datos queden representados en términos
+ de mínimos cuadrados.
+ Para ello, se realiza una descomposición en autovalores y se calcula la
+ matriz de covarianza.
+ Los nuevos ejes sobre los que se proyectan los datos son las componentes
+ principales.
+ La primera componente principal esla transformación lineal que maximiza
+ la varianza de los datos, la segunda es la segunda mayor combinación, etc...
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename C:/Users/e6840810/Desktop/memoria_tfm/img/pca.png
+	lyxscale 50
+	scale 25
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Principal Component Analysis
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "FiguraPCA"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
+Linear Discriminant Analysis
+\end_layout
+
+\begin_layout Standard
+Algoritmo de clasificación que generaliza el discriminante lineal de Fisher,
+ un algoritmo que busca una combinación lineal que separe distintas clases
+ de objetos o eventos.
+ La combinación puede ser usada como un clasificador lineal o como en nuestro
+ caso para realizar una reducción de dimensionalidad.
+\end_layout
+
+\begin_layout Standard
+Es un método muy similar a ANOVA y PCA.
+ LDA busca modelar la diferencia de la clase de datos, mientras PCA no la
+ tiene en cuenta.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename C:/Users/e6840810/Desktop/memoria_tfm/img/lda.png
+	lyxscale 50
+	scale 25
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Linear Discriminant Analysis
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
+Proyección aleatoria
+\end_layout
+
+\begin_layout Standard
+Es una proyección en la que las componentes de proyección (escalar y ángulo)
+ se toman al azar.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename C:/Users/e6840810/Desktop/memoria_tfm/img/random.png
+	lyxscale 50
+	scale 25
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Proyección aleatoria
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Algoritmos no lineales
+\end_layout
+
+\begin_layout Subsection*
+Multi-Dimensional Scaling
+\end_layout
+
+\begin_layout Standard
+Buscar qué factores (dimensiones) subyacen bajo los datos obtenidos en un
+ estudio.
+ Muy utilizado en marketing y ciencias sociales.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename C:/Users/e6840810/Desktop/memoria_tfm/img/mds.png
+	lyxscale 50
+	scale 25
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Multi-Dimensional Scaling
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
+T-Distributed Stochastic Neighbour Embeding (T-SNE)
+\end_layout
+
+\begin_layout Standard
+Objetos similares en alta dimensión están próximos en el nuevo sistema de
+ referencia.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename C:/Users/e6840810/Desktop/memoria_tfm/img/tsne.png
+	lyxscale 50
+	scale 25
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+T-SNE
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Chapter
+Objetivo
+\end_layout
+
+\begin_layout Chapter
+Desarrollo
+\end_layout
+
+\begin_layout Chapter
+Conclusiones
+\end_layout
+
+\end_body
+\end_document
