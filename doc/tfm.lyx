@@ -73,7 +73,11 @@
 \begin_body
 
 \begin_layout Title
-Trabajo Fin de Máster
+Trabajo Fin de Máster: Visualizador de conjuntos de datos
+\end_layout
+
+\begin_layout Author
+Javier Cano Montero
 \end_layout
 
 \begin_layout Abstract
@@ -144,11 +148,257 @@ En Machine Learning la reducción de dimensionalidad es el proceso de reducir
  el número de variables de un conjunto a un subconjunto de variables manteniendo
  la mayor cantidad de información posible.
  La transformación de datos puede ser lineal o no lineal.
- 
+\end_layout
+
+\begin_layout Chapter
+Objetivo
+\end_layout
+
+\begin_layout Standard
+Crear una aplicación web que permita realizar visualizaciones de conjuntos
+ de datos de alta dimensión tras aplicar redución de dimensionalidad.
+ La aplicación debe presentar las siguientes características:
+\end_layout
+
+\begin_layout Itemize
+Carga de ficheros desde el ordenador del usuario.
+\end_layout
+
+\begin_layout Itemize
+Especificar características del dataset (variable target, separador, porcentaje
+ de entrenamiento)
+\end_layout
+
+\begin_layout Itemize
+Selección de las variables que se quieren visualizar.
+\end_layout
+
+\begin_layout Itemize
+Selección de los algoritmos de reducción de dimensionalidad que se quieren
+ utilizar.
+\end_layout
+
+\begin_layout Itemize
+Visualizar gráficamente el conjunto de datos tras aplicar cada algoritmo
+ de reducción de dimensionalidad.
+\end_layout
+
+\begin_layout Itemize
+Para los algoritmos lineales mostrar cómo cada variable seleccionada es
+ proyectada sobre las componentes principales.
+\end_layout
+
+\begin_layout Itemize
+Para los algoritmos lineales calcular cómo de bien separa linealmente los
+ datos el algoritmo de reducción de dimensionalidad.
+\end_layout
+
+\begin_layout Chapter
+Desarrollo
 \end_layout
 
 \begin_layout Section
-Algoritmos lineales
+Aplicación web
+\end_layout
+
+\begin_layout Standard
+Para crear la aplicación web existen varios frameworks para Python.
+ Por familiaridad y las opciones que presta se decidió utilizar Flask.
+\end_layout
+
+\begin_layout Standard
+Flask es un framework que permite crear una aplicación capaz de responder
+ a llamadas HTTP con funciones Python usando decoradores.
+ Estas funciones pueden devolver páginas web enteras o completar una parte
+ de una plantilla hecha previamente.
+ En este proyecto, se han usado ambas aproximaciones, la página de carga
+ y preparación de datos es una web estática devuelta por una función; y
+ el resto de la aplicación es una plantilla sobre la que se muestran las
+ visualizaciones.
+\end_layout
+
+\begin_layout Standard
+Además, y aunque no era un objetivo del proyecto, Flask permite crear webs
+ responsive para la correcta visualización en dispositivos móviles.
+\end_layout
+
+\begin_layout Section
+Carga y preparación de datos
+\end_layout
+
+\begin_layout Standard
+La pantalla de carga de datos permite subir un fichero a la aplicación web,
+ especificar la variable objetivo, el separador del csv y el porcentaje
+ de observaciones que se usarán para entrenamiento.
+ Actualmente la aplicación solo acepta ficheros CSV.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename C:/Users/e6840810/Desktop/FIFA18/img/carga_datos.PNG
+	lyxscale 50
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Pantalla de carga de datos
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+El fichero se guarda en una carpeta local de la aplicación web para poder
+ leerlo y transformarlo en un panel de datos de Python o Pandas.
+\end_layout
+
+\begin_layout Subsection
+Pandas
+\end_layout
+
+\begin_layout Standard
+Pandas es la librería de creación de paneles de datos de Python.
+ Entre sus funciones, permite leer ficheros CSV y su manipulación.
+\end_layout
+
+\begin_layout Standard
+En el proyecto se ha usado Pandas para leer el fichero que se sube a la
+ aplicación, usando el separador proporcionado por el usuario.
+ 
+\end_layout
+
+\begin_layout Standard
+Una vez leídos los datos se realizan las siguientes operaciones:
+\end_layout
+
+\begin_layout Enumerate
+Se carga en una lista la variable objetivo del conjunto de datos y se elimina
+ del panel.
+ 
+\end_layout
+
+\begin_layout Enumerate
+Se transforman las variables a numéricas.
+ Si se carga alguna variable categórica en el conjunto de datos la aplicación
+ mostrará un error.
+\end_layout
+
+\begin_layout Enumerate
+Se normalizan los datos (Media 0, desv.
+ típica 1).
+\end_layout
+
+\begin_layout Enumerate
+Se parten los datos en un conjunto de entrenamiento y pruebas.
+ El porcentaje de observaciones que se incluyen en el conjunto de entrenamiento
+ es especificado por el usuario en la pantalla de carga de datos.
+\end_layout
+
+\begin_layout Section
+Selección de variables y algoritmos de reducción de dimensionalidad
+\end_layout
+
+\begin_layout Standard
+Una vez cargados y preparados los datos, se muestra la pantalla para la
+ selección de variables y algoritmos de reducción de dimensionalidad.
+\end_layout
+
+\begin_layout Standard
+En esta pantalla se mostrarán todas las variables del conjunto de datos
+ menos la variable objetivo especificada por el usuario en la pantalla de
+ carga de datos.
+ El usuario podrá seleccionar cuáles de estas variables se pasarán al algoritmo
+ de reducción de dimensionalidad.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename C:/Users/e6840810/Desktop/FIFA18/img/visualizer.PNG
+	lyxscale 50
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Pantalla de selección de variables y algoritmos
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+También se muestran los algoritmos de reducción de dimensionalidad que se
+ pueden ejecutar sobre las variables seleccionadas del conjunto de datos.
+ 
+\end_layout
+
+\begin_layout Subsection
+Scikit-learn
+\end_layout
+
+\begin_layout Standard
+Scikit-learn es la librería de machine learning más utilizada de Python.
+ Entre los métodos que incluye se encuentran los que necesitamos para realizar
+ reducción de dimensionalidad y los clasificadores lineales.
+\end_layout
+
+\begin_layout Subsubsection
+Algoritmos de reducción de dimensionalidad
+\end_layout
+
+\begin_layout Subsubsection*
+Lineales
 \end_layout
 
 \begin_layout Standard
@@ -167,6 +417,53 @@ En los algoritmos lineales, se puede observar cómo cada una de las variables
 \end_layout
 
 \begin_layout Standard
+Scikit-Learn ofrece una API muy similar para los algoritmos de reducción
+ de dimensionalidad, por lo que se pueden ejecutar de forma similar:
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+Crear objeto
+\series default
+.
+ En el constructor especificamos que el espacio destino en el que proyectaremos
+ los datos es de dimensión 2.
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+Realizar fit
+\series default
+.
+ Con los datos de entrenamiento, construimos el espacio de destino.
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+Transformar train
+\series default
+.
+ Proyectamos los datos de entrenamiento sobre el espacio de destino.
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+Transformar test
+\series default
+.
+ Proyectamos los datos de prueba sobre el espacio de destino.
+\end_layout
+
+\begin_layout Standard
+Una vez se ha realizado la reducción de dimensionalidad del conjunto de
+ datos, se pasan a la librería bokeh para representarlos gráficamente.
+\end_layout
+
+\begin_layout Standard
 Como ejemplo para ilustrar cada uno de los algoritmos usaremos el conjunto
  Iris, porque es uno de los datasets más conocidos en la bibliografía.
  Consta de 150 observaciones de plantas tipo Iris divididas en tres clases
@@ -175,11 +472,7 @@ Como ejemplo para ilustrar cada uno de los algoritmos usaremos el conjunto
  de la longitud y anchura de sus sépalos y los pétalos.
 \end_layout
 
-\begin_layout Standard
-Entre los más conocidos están:
-\end_layout
-
-\begin_layout Subsection*
+\begin_layout Paragraph*
 Principal Component Analysis
 \end_layout
 
@@ -233,16 +526,12 @@ name "FiguraPCA"
 
 \end_layout
 
-\begin_layout Plain Layout
-
-\end_layout
-
 \end_inset
 
 
 \end_layout
 
-\begin_layout Subsection*
+\begin_layout Paragraph*
 Linear Discriminant Analysis
 \end_layout
 
@@ -250,12 +539,8 @@ Linear Discriminant Analysis
 Algoritmo de clasificación que generaliza el discriminante lineal de Fisher,
  un algoritmo que busca una combinación lineal que separe distintas clases
  de objetos o eventos.
- La combinación puede ser usada como un clasificador lineal o como en nuestro
- caso para realizar una reducción de dimensionalidad.
-\end_layout
-
-\begin_layout Standard
-Es un método muy similar a ANOVA y PCA.
+ La combinación puede ser usada como un clasificador lineal y para realizar
+ una reducción de dimensionalidad.
  LDA busca modelar la diferencia de la clase de datos, mientras PCA no la
  tiene en cuenta.
 \end_layout
@@ -291,17 +576,13 @@ Linear Discriminant Analysis
 
 \end_layout
 
-\begin_layout Plain Layout
-
-\end_layout
-
 \end_inset
 
 
 \end_layout
 
-\begin_layout Subsection*
-Proyección aleatoria
+\begin_layout Paragraph*
+Proyección aleatoria Gaussiana
 \end_layout
 
 \begin_layout Standard
@@ -340,26 +621,22 @@ Proyección aleatoria
 
 \end_layout
 
-\begin_layout Plain Layout
-
-\end_layout
-
 \end_inset
 
 
 \end_layout
 
-\begin_layout Section
-Algoritmos no lineales
+\begin_layout Subsubsection*
+No lineales
 \end_layout
 
-\begin_layout Subsection*
+\begin_layout Paragraph*
 Multi-Dimensional Scaling
 \end_layout
 
 \begin_layout Standard
-Buscar qué factores (dimensiones) subyacen bajo los datos obtenidos en un
- estudio.
+Busca qué factores (dimensiones) subyacen bajo los datos obtenidos en el
+ conjunto de datos.
  Muy utilizado en marketing y ciencias sociales.
 \end_layout
 
@@ -394,22 +671,18 @@ Multi-Dimensional Scaling
 
 \end_layout
 
-\begin_layout Plain Layout
-
-\end_layout
-
 \end_inset
 
 
 \end_layout
 
-\begin_layout Subsection*
+\begin_layout Paragraph*
 T-Distributed Stochastic Neighbour Embeding (T-SNE)
 \end_layout
 
 \begin_layout Standard
-Objetos similares en alta dimensión están próximos en el nuevo sistema de
- referencia.
+Observaciones cercanas en alta dimensión están próximos en el nuevo sistema
+ de referencia.
 \end_layout
 
 \begin_layout Standard
@@ -448,16 +721,255 @@ T-SNE
 
 \end_layout
 
-\begin_layout Chapter
-Objetivo
+\begin_layout Subsubsection
+Clasificador lineal (SVM)
+\end_layout
+
+\begin_layout Standard
+Para poder saber cómo de bien separan los algoritmos de reducción de dimensional
+idad los datos, se ha optado por ejecutar una SVM con kernel lineal con
+ los datos en dimensión reducida en los algoritmos lineales, excepto LDA
+ porque ya es un algoritmo de clasificación.
+ Los datos de entrenamiento de dimensión reducida se usan para entrenar
+ la SVM y se predice el conjunto de datos de prueba.
+ Con las predicciones se calcula el accuracy (acierto/total).
+\end_layout
+
+\begin_layout Standard
+Una vez realizada la reducción de dimensionalidad y calculado el accuracy
+ del clasificador lineal se crean las visualizaciones.
+\end_layout
+
+\begin_layout Subsection
+Bokeh
+\end_layout
+
+\begin_layout Standard
+Bokeh es una librería para creación de visualizaciones en Python que permite
+ interactividad e integrarse fácilmente con Flask.
+ Para crear las visualizaciones se cargan los datos en una estructura de
+ datos propia de Bokeh (ColumnDataSource) que permite vincular distintas
+ gráficas, permitiéndonos resaltar puntos en una gráfica y que estos puntos
+ queden resaltados en el resto de gráficas.
+\end_layout
+
+\begin_layout Standard
+La aplicación recibe de la pantalla de selección de variables y algoritmos
+ una lista con los algoritmos que tiene que representar, realiza la reducción
+ de dimensionalidad y crea las figuras, que son incluídas en una lista.
+ Si se desea visualizar un algoritmo de reducción de dimensionalidad lineal,
+ también se extraen las componentes principales.
+\end_layout
+
+\begin_layout Standard
+Finalmente, con Bokeh se crea un contenedor que incluye todas las figuras
+ y se devuelve el renderizado de una plantilla con las gráficas incluídas.
 \end_layout
 
 \begin_layout Chapter
-Desarrollo
+Conjunto de datos FIFA 18
+\end_layout
+
+\begin_layout Standard
+En Kaggle se distribuyó bajo la licencia Creative Commons 4 un conjunto
+ de datos del juego FIFA 18 (https://www.kaggle.com/thec03u5/fifa-18-demo-player-d
+ataset).
+ Este conjunto de datos dispone de las estadísticas de todos los jugadores
+ disponibles.
+ Entre las estadísticas aparecen la media general del jugador, la edad,
+ el potencial, la aceleración, agresividad, estadísticas de portero, reacción,
+ pases cortos y largos, potencia de disparo, etc...
+ 
+\end_layout
+
+\begin_layout Standard
+Para nuestro ejemplo, utilizaremos la variable media general como variable
+ objetivo y el resto las utilizaremos para realizar la reducción de dimensionali
+dad con los algoritmos implementados en la aplicación.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename C:/Users/e6840810/Desktop/FIFA18/img/variables_fifa.PNG
+	lyxscale 50
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Selección de variables conjunto FIFA 18
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Métodos lineales
+\end_layout
+
+\begin_layout Standard
+En los métodos lineales, podemos ver cómo las distintas variables afectan
+ a la construción de las componentes principales.
+ En caso de PCA, como el criterio de construcción del espacio de dimensión
+ reducida es maximizar la varianza, podemos ver que separa a los jugadores
+ en dos tipos.
+ Una gran nube centrada y otra pequeña que se centra en valores altos de
+ la primera componente principal.
+ Estudiando las componentes observamos que esta pequeña nube de jugadores
+ tiene valores altos en las variables GK diving, GK handling, GK kicking,
+ GK positioning y GK reflexes; es decir variables de portero (Goal Keeper).
+ Como LDA tiene en cuenta la variable objetivo a la hora de crear el espacio
+ de dimensión reducida no se observa esta separación.
+ En la proyección aleatoria, como las componentes son elegidas al azar,
+ no hay nada que resaltar.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename C:/Users/e6840810/Desktop/FIFA18/img/pca_fifa.png
+	lyxscale 25
+	scale 10
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename C:/Users/e6840810/Desktop/FIFA18/img/lda_fifa.png
+	lyxscale 25
+	scale 10
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename C:/Users/e6840810/Desktop/FIFA18/img/random_fifa.png
+	lyxscale 25
+	scale 10
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Métodos lineales conjunto FIFA 18 (1) PCA (2) LDA (3) Random
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Métodos no lineales
+\end_layout
+
+\begin_layout Standard
+En los métodos no lineales se puede observar que se forman dos nubes de
+ puntos.
+ Ambos casos son iguales que en PCA, los porteros forman su propia nube.
+ Para verificarlo, puede resaltarse en la visuazliación de PCA a los porteros
+ y observar cómo se resaltan en estas visualizaciones.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\noindent
+\align center
+\begin_inset Graphics
+	filename C:/Users/e6840810/Desktop/FIFA18/img/tsne-fifa.png
+	lyxscale 25
+	scale 10
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename C:/Users/e6840810/Desktop/FIFA18/img/mds_fifa.png
+	lyxscale 25
+	scale 10
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Métodos no lineales conjunto FIFA 18 (1) T-SNE (2) MDS
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Chapter
-Conclusiones
+Conclusiones y trabajo futuro
+\end_layout
+
+\begin_layout Standard
+Se ha creado una aplicación web que permite realizar visualizaciones de
+ conjuntos de datos de alta dimensión tras aplicar redución de dimensionalidad
+ para realizar exploraciones y poder caracterizar rápidamente visualizaciones
+ de los métodos de reducción de dimensionalidad no lineales usando Bokeh
+ sobre Flask.
+\end_layout
+
+\begin_layout Standard
+En el futuro se propone implementar otros clasificadores no lineales e introduci
+r mejoras en la experiencia de usuario como por ejemplo ser capaz de seleccionar
+ en la visualización las variables que se van a introducir en siguientes
+ visualizaciones.
 \end_layout
 
 \end_body
