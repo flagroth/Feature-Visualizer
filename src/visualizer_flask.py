@@ -86,7 +86,10 @@ def data_prep(filename=_filename, target=_target, separator=_separator, train_pc
 
 # Plot drawing
 def make_plot(source_points, source_points_test, compo=None, columns=None, method=None, accuracy=0):  
-	p = figure(tools = ["save,pan,wheel_zoom,box_select,lasso_select,reset"], width = 300, height = 300, title=method + ". Acc: " + str(accuracy), sizing_mode='scale_width')
+	if method in ['PCA','LDA','RANDOM']:
+		p = figure(tools = ["save,pan,wheel_zoom,box_select,lasso_select,reset"], width = 200, height = 200, title=method + ". Acc: " + str(accuracy), sizing_mode='scale_width')
+	else:
+		p = figure(tools = ["save,pan,wheel_zoom,box_select,lasso_select,reset"], width = 200, height = 200, title=method, sizing_mode='scale_width')
 	x = 'x_' + method.lower()
 	y = 'y_' + method.lower()
 	t_x = 'x_test_' + method.lower()
@@ -291,7 +294,7 @@ def visualize():
 	if "MDS" in vizs:	
 		g.append(make_plot(source_points, source_points_test, method="MDS", accuracy = 0))
 	
-	p = gridplot(g, ncols=2, plot_width=400, plot_height=400, sizing_mode='scale_width', merge_tools = False)
+	p = gridplot(g, ncols=2, plot_width=200, plot_height=200, sizing_mode='scale_width', merge_tools = False)
 	script, div = components(p)
 	return render_template("visualizer.html", feature_names=data_columns, selected_features=features, viz_names=viz_names, selected_viz=vizs, script=script, div=div)
 	

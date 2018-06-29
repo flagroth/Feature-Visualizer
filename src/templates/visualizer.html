@@ -15,9 +15,9 @@
 </head>
 <body>
 <div class="container-fluid">
-<H1>Feature visualizer</H1>
+<a href="/"><H1>Feature visualizer</H1></a>
 	<div class="row">
-		<div class="col-sm-3">
+		<div class="col-sm-4">
 			<div class="panel-body">
 				<form action='/visualize' method="post">
 				<b>Feature selection:</b></br>
@@ -46,19 +46,12 @@
 					{% endif %}
 					</br>
 				{% endfor %}
-				<!--
-				<label><input type="checkbox" name="viz" value="LDA">LDA</label></br>
-				<label><input type="checkbox" name="viz" value="RANDOM" >Random projection</label></br>
-				<label><input type="checkbox" name="viz" value="TSNE">t-SNE</label></br>
-				<label>Iterations (min=200):</br><input type="text" name="tsne_iter" value="300"></label></br>
-				<label><input type="checkbox" name="viz" value="MDS" >MDS</label></br>
-				<label>Max. Iterations (Warning: SLOW!!): </br><input type="text" name="mds_iter" value="5"></label></br>
-				-->
+
 				<button type='submit'>Submit</button>
 				</form>
 			</div>
 		</div>
-		<div class="col-sm-8">
+		<div class="col-sm-7">
 			{{ script|safe }}
 			{{ div|safe }}
 		</div>
