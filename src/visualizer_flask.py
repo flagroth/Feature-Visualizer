@@ -1,4 +1,3 @@
-
 # coding: utf-8
 import os
 from flask import Flask, render_template, request, redirect, url_for
@@ -25,6 +24,8 @@ from werkzeug.utils import secure_filename
 
 from flask import send_from_directory
 
+import numpy as np
+
 UPLOAD_FOLDER = '../data'
 ALLOWED_EXTENSIONS = set(['csv'])
 
@@ -33,6 +34,9 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 _filename="kk_filename"
 _target="kk_target"
 _separator=","
+_train_pct=70
+_sampling=100
+viz_names=["PCA","LDA","RANDOM","TSNE","MDS"]
 
 # Filename checker
 def allowed_file(filename):
@@ -40,10 +44,17 @@ def allowed_file(filename):
 		   filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Data preparation
-def data_prep(filename=_filename, target=_target, separator=_separator, train_pct=70, features=None):
+def data_prep(filename=_filename, target=_target, separator=_separator, train_pct=70, sampling=100, features=None):
 	global _dataset 
 	_dataset = pd.read_csv("../data/"+filename, sep=separator)
-	dataset = _dataset
+	
+	if sampling==100:
+		dataset=_dataset
+	else:
+		dataset = _dataset.groupby(target,group_keys=False).apply(lambda x:x.sample(min(len(x),int(len(x)*(sampling)/100))))
+		print("Original ", _dataset.shape, "Sampled", dataset.shape)
+	
+	
 	dataset = dataset.apply(pd.to_numeric, errors='coerce')
 	print(dataset.columns)
 	y = dataset[target]
@@ -75,7 +86,7 @@ def data_prep(filename=_filename, target=_target, separator=_separator, train_pc
 
 # Plot drawing
 def make_plot(source_points, source_points_test, compo=None, columns=None, method=None, accuracy=0):  
-	p = figure(tools = ["pan,wheel_zoom,box_select,lasso_select,reset"], width = 300, height = 300, title=method + ". Acc: " + str(accuracy), sizing_mode='scale_width')
+	p = figure(tools = ["save,pan,wheel_zoom,box_select,lasso_select,reset"], width = 300, height = 300, title=method + ". Acc: " + str(accuracy), sizing_mode='scale_width')
 	x = 'x_' + method.lower()
 	y = 'y_' + method.lower()
 	t_x = 'x_test_' + method.lower()
@@ -83,9 +94,9 @@ def make_plot(source_points, source_points_test, compo=None, columns=None, metho
 	compo_x = 'comp_' + method.lower() + '_x'
 	compo_y = 'comp_' + method.lower() + '_y'
 	
-	p.circle(x=x, y=y , source = source_points, alpha=.8, fill_color='colors', line_color='colors')
+	p.circle(x=x, y=y , source = source_points, alpha=.8, fill_color='colors_fill', line_color='colors_line')
 	if method in ['PCA','LDA','RANDOM']:	
-		p.cross(x=t_x, y=t_y, source = source_points_test, alpha=.8, fill_color='colors_'+method.lower(), line_color='colors_'+method.lower(), size=8)
+		p.circle(x=t_x, y=t_y, source = source_points_test, alpha=.8, fill_color='colors_'+method.lower()+"_fill", line_color='colors_'+method.lower()+"_line", size=8)
 		# In linear methods we can show components
 		for a,b,label in zip(compo[0,:],compo[1,:],columns):
 			p.line([0,a],[0,b], color = 'red')
@@ -111,8 +122,9 @@ def upload_file():
 			target = request.form.get("target")
 			separator = request.form.get("separator")
 			train_pct = request.form.get("train_pct")
+			sampling = request.form.get("sampling")
 			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-			return redirect(url_for('features', filename=filename, target=target, separator=separator, train_pct=train_pct))
+			return redirect(url_for('features_page', filename=filename, target=target, separator=separator, train_pct=train_pct, sampling=sampling))
 	return '''
 	<!doctype html>
 	<link rel=stylesheet type=text/css href="static/cerulean.min.css">
@@ -124,7 +136,8 @@ def upload_file():
 				<p><input type=file name=file>*Only CSV</p>
 				<p>Target column:<input type=text name=target>
 				CSV separator<input type=text name=separator></p>
-				<p>Training percentage:<input type=text name=train_pct></p>
+				<p>Training percentage: <input type=text name=train_pct></p>
+				<p>Stratified sampling pct: <input type=text name=sampling></p> 
 				<input type=submit value=Upload>
 			</form>
 		</div>
@@ -132,18 +145,19 @@ def upload_file():
 	'''
 
 # Feature selection	
-@app.route('/features?filename=<filename>&target=<target>&separator=<separator>&train_pct=<train_pct>', methods=['GET'])
-def features(filename,target,separator,train_pct):
-	global _filename,_target, _separator, _train_pct
+@app.route('/features_page?filename=<filename>&target=<target>&separator=<separator>&train_pct=<train_pct>&sampling=<sampling>', methods=['GET'])
+def features_page(filename,target,separator,train_pct,sampling):
+	global _filename,_target, _separator, _train_pct, _sampling
 	_filename=filename
 	_target=target
 	_separator=separator
 	_train_pct=int(train_pct)
+	_sampling=int(sampling)
 
-	data=data_prep(_filename,_target,_separator,_train_pct)
+	data=data_prep(_filename,_target,_separator,_train_pct,_sampling)
 
 	data_columns,train_x,train_y,test_x,test_y = data.values()
-	return render_template("visualizer.html", feature_names=train_x.columns, filename=filename, target=target)
+	return render_template("visualizer.html", feature_names=train_x.columns, viz_names=viz_names, filename=filename, target=target)
 
 # Visualizations	
 @app.route('/visualize', methods=['POST'])
@@ -151,7 +165,7 @@ def visualize():
 	features = request.form.getlist('feature')
 	if len(features)==0:
 		features=None
-	data=data_prep(_filename, _target, _separator, _train_pct, features)
+	data=data_prep(_filename, _target, _separator, _train_pct, _sampling, features)
 	
 	dataSource=dict()
 	dataSource_test=dict()
@@ -161,11 +175,14 @@ def visualize():
 	vizs = request.form.getlist('viz')
 	print(vizs)
 	color = Category20[20]
-	colors = []
+	colors_fill = []
+	colors_line = []
 	for i in train_y.astype(int):
-		colors.append(color[i]) 
+		colors_fill.append(color[i]) 
+		colors_line.append(color[i]) 
 		
-	dataSource['colors']=colors
+	dataSource['colors_fill']=colors_fill
+	dataSource['colors_line']=colors_line
 	clf = SVC(kernel = 'linear')
 	if "PCA" in vizs:
 		print("Making PCA")
@@ -180,10 +197,15 @@ def visualize():
 		dataSource['y_pca'] = X_r_pca[:,1]
 		dataSource_test['x_test_pca'] = X_r_pca_test[:,0]
 		dataSource_test['y_test_pca'] = X_r_pca_test[:,1]
-		colors_pca = []
+		colors_pca_fill = []
+		colors_pca_line = []
+		for i in test_y.astype(int):
+			colors_pca_fill.append(color[i])
 		for i in y_predict_pca.astype(int):
-			colors_pca.append(color[i]) 		
-		dataSource_test['colors_pca'] = colors_pca
+			colors_pca_line.append(color[i])
+			
+		dataSource_test['colors_pca_fill'] = colors_pca_fill
+		dataSource_test['colors_pca_line'] = colors_pca_line
 	
 	if "LDA" in vizs:
 		print("Making LDA")
@@ -197,10 +219,15 @@ def visualize():
 		dataSource['y_lda'] = X_r_lda[:,1]
 		dataSource_test['x_test_lda'] = X_r_lda_test[:,0]
 		dataSource_test['y_test_lda'] = X_r_lda_test[:,1]
-		colors_lda = []
+		colors_lda_fill = []
+		colors_lda_line = []
+		for i in test_y.astype(int):
+			colors_lda_fill.append(color[i])
 		for i in y_predict_lda.astype(int):
-			colors_lda.append(color[i]) 		
-		dataSource_test['colors_lda'] = colors_lda
+			colors_lda_line.append(color[i])
+			
+		dataSource_test['colors_lda_fill'] = colors_lda_fill
+		dataSource_test['colors_lda_line'] = colors_lda_line
 
 	if "RANDOM" in vizs:
 		print("Making RANDOM")
@@ -216,10 +243,15 @@ def visualize():
 		dataSource['y_random'] = X_r_random[:,1]
 		dataSource_test['x_test_random'] = X_r_random_test[:,0]
 		dataSource_test['y_test_random'] = X_r_random_test[:,1]
-		colors_random = []
+		colors_random_fill = []
+		colors_random_line = []
+		for i in test_y.astype(int):
+			colors_random_fill.append(color[i])
 		for i in y_predict_random.astype(int):
-			colors_random.append(color[i]) 		
-		dataSource_test['colors_random'] = colors_random
+			colors_random_line.append(color[i])
+			
+		dataSource_test['colors_random_fill'] = colors_random_fill
+		dataSource_test['colors_random_line'] = colors_random_line
 		
 	
 	if "TSNE" in vizs:
@@ -259,12 +291,12 @@ def visualize():
 	if "MDS" in vizs:	
 		g.append(make_plot(source_points, source_points_test, method="MDS", accuracy = 0))
 	
-	p = gridplot(g, ncols=1, plot_width=600, plot_height=600, sizing_mode='scale_width', merge_tools = False)
+	p = gridplot(g, ncols=2, plot_width=400, plot_height=400, sizing_mode='scale_width', merge_tools = False)
 	script, div = components(p)
-	return render_template("visualizer.html",feature_names=data_columns, script=script, div=div)
+	return render_template("visualizer.html", feature_names=data_columns, selected_features=features, viz_names=viz_names, selected_viz=vizs, script=script, div=div)
 	
 	
 if __name__ == '__main__':
-	app.run('10.71.185.122',port=5000, debug=True)
+	app.run('10.71.176.149',port=5000, debug=True)
 	
 
