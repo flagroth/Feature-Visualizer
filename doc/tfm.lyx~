@@ -834,11 +834,6 @@ status open
 \end_inset
 
 
-\end_layout
-
-\begin_layout Plain Layout
-\noindent
-\align center
 \begin_inset Graphics
 	filename img/random_w2v.png
 	lyxscale 25

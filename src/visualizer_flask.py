@@ -16,7 +16,7 @@ import pandas as pd
 import numpy as np
 from bokeh.io import output_notebook, show
 from bokeh.plotting import figure, gridplot
-from bokeh.models import ColumnDataSource, HoverTool
+from bokeh.models import ColumnDataSource
 from bokeh.embed import components
 from bokeh.palettes import Category20
 
@@ -48,17 +48,22 @@ def data_prep(filename=_filename, target=_target, separator=_separator, train_pc
 	global _dataset 
 	_dataset = pd.read_csv("../data/"+filename, sep=separator)
 	
+	if _dataset[target].dtypes=='O':
+		_dataset[target] = _dataset[target].astype('category')
+		_dataset[target] = _dataset[target].cat.codes
+	_dataset = _dataset.apply(pd.to_numeric, errors='coerce')
+	#_dataset = _dataset.dropna()
+	
 	if sampling==100:
 		dataset=_dataset
 	else:
 		dataset = _dataset.groupby(target,group_keys=False).apply(lambda x:x.sample(min(len(x),int(len(x)*(sampling)/100))))
 		print("Original ", _dataset.shape, "Sampled", dataset.shape)
 	
-	
-	dataset = dataset.apply(pd.to_numeric, errors='coerce')
+
 	print(dataset.columns)
 	y = dataset[target]
-
+	
 	dataset=dataset.drop(target, axis=1)
 	data_columns = dataset.columns
 	
@@ -66,8 +71,8 @@ def data_prep(filename=_filename, target=_target, separator=_separator, train_pc
 		x = dataset[features]
 	else:
 		x = dataset
-		
-	x = x.apply(pd.to_numeric, errors='coerce')
+				
+	x = x.apply(pd.to_numeric, downcast='float')
 	x = (x - x.mean()) / (x.max() - x.min())
 	msk = np.random.rand(len(x)) < train_pct/100
 	
@@ -85,9 +90,13 @@ def data_prep(filename=_filename, target=_target, separator=_separator, train_pc
 	
 
 # Plot drawing
-def make_plot(source_points, source_points_test, compo=None, columns=None, method=None, accuracy=0):  
+def make_plot(source_points, source_points_test, compo=None, columns=None, method=None, accuracy=0, old_accuracy=0):  
 	if method in ['PCA','LDA','RANDOM']:
-		p = figure(tools = ["save,pan,wheel_zoom,box_select,lasso_select,reset"], width = 200, height = 200, title=method + ". Acc: " + str(accuracy), sizing_mode='scale_width')
+		if old_accuracy!=0:
+			linear_title=method + ". Acc: " + '{:6.4f}'.format(accuracy) + ". Old Acc: " + '{:6.4f}'.format(old_accuracy)
+		else:
+			linear_title=method + ". Acc: " + '{:6.4f}'.format(accuracy)
+		p = figure(tools = ["save,pan,wheel_zoom,box_select,lasso_select,reset"], width = 200, height = 200, title=linear_title, sizing_mode='scale_width')
 	else:
 		p = figure(tools = ["save,pan,wheel_zoom,box_select,lasso_select,reset"], width = 200, height = 200, title=method, sizing_mode='scale_width')
 	x = 'x_' + method.lower()
@@ -97,13 +106,15 @@ def make_plot(source_points, source_points_test, compo=None, columns=None, metho
 	compo_x = 'comp_' + method.lower() + '_x'
 	compo_y = 'comp_' + method.lower() + '_y'
 	
-	p.circle(x=x, y=y , source = source_points, alpha=.8, fill_color='colors_fill', line_color='colors_line')
+	p.square(x=x, y=y , source = source_points, alpha=.8, fill_color='colors_fill', line_color='colors_line', legend='label')
 	if method in ['PCA','LDA','RANDOM']:	
-		p.circle(x=t_x, y=t_y, source = source_points_test, alpha=.8, fill_color='colors_'+method.lower()+"_fill", line_color='colors_'+method.lower()+"_line", size=8)
+		p.circle(x=t_x, y=t_y, source = source_points_test, alpha=.8, fill_color='colors_'+method.lower()+"_fill", line_color='colors_'+method.lower()+"_line", size=8, legend='label')
 		# In linear methods we can show components
 		for a,b,label in zip(compo[0,:],compo[1,:],columns):
 			p.line([0,a],[0,b], color = 'red')
 			p.text([a],[b],text=[label], text_align="center")
+	p.legend.location = "top_left"
+	p.legend.click_policy="hide"
 	return(p)
 
 # Upload file							   
@@ -130,7 +141,25 @@ def upload_file():
 			return redirect(url_for('features_page', filename=filename, target=target, separator=separator, train_pct=train_pct, sampling=sampling))
 	return '''
 	<!doctype html>
-	<link rel=stylesheet type=text/css href="static/cerulean.min.css">
+	<head>
+		<link rel=stylesheet type=text/css href="static/cerulean.min.css">
+		<link rel="apple-touch-icon" sizes="57x57" href="static/apple-icon-57x57.png">
+		<link rel="apple-touch-icon" sizes="60x60" href="static/apple-icon-60x60.png">
+		<link rel="apple-touch-icon" sizes="72x72" href="static/apple-icon-72x72.png">
+		<link rel="apple-touch-icon" sizes="76x76" href="static/apple-icon-76x76.png">
+		<link rel="apple-touch-icon" sizes="114x114" href="static/apple-icon-114x114.png">
+		<link rel="apple-touch-icon" sizes="120x120" href="static/apple-icon-120x120.png">
+		<link rel="apple-touch-icon" sizes="144x144" href="static/apple-icon-144x144.png">
+		<link rel="apple-touch-icon" sizes="152x152" href="static/apple-icon-152x152.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="static/apple-icon-180x180.png">
+		<link rel="icon" type="image/png" sizes="192x192"  href="static/android-icon-192x192.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="static/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="96x96" href="static/favicon-96x96.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="static/favicon-16x16.png">
+		<link rel="manifest" href="static/manifest.json">
+		<meta name="msapplication-TileColor" content="#ffffff">
+		<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+	</head>
 	<title>Feature visualizer</title>
 	<h1>Upload new File</h1>
 	<div class=""panel panel-default"">
@@ -139,8 +168,8 @@ def upload_file():
 				<p><input type=file name=file>*Only CSV</p>
 				<p>Target column:<input type=text name=target>
 				CSV separator<input type=text name=separator></p>
-				<p>Training percentage: <input type=text name=train_pct></p>
-				<p>Stratified sampling pct: <input type=text name=sampling></p> 
+				<p>Training percentage: <input type=text name=train_pct value="70"></p>
+				<p>Stratified sampling pct: <input type=text name=sampling value="100"></p> 
 				<input type=submit value=Upload>
 			</form>
 		</div>
@@ -165,6 +194,7 @@ def features_page(filename,target,separator,train_pct,sampling):
 # Visualizations	
 @app.route('/visualize', methods=['POST'])
 def visualize():
+	global acc_pca, acc_lda, acc_random
 	features = request.form.getlist('feature')
 	if len(features)==0:
 		features=None
@@ -195,6 +225,12 @@ def visualize():
 		X_r_pca_test = pca.transform(test_x)
 		clf.fit(X_r_pca,train_y)
 		y_predict_pca = clf.predict(X_r_pca_test)
+		try:
+			old_acc_pca = acc_pca
+		except UnboundLocalError:
+			old_acc_pca = 0
+		except NameError:
+			old_acc_pca = 0
 		acc_pca = accuracy_score(test_y, y_predict_pca)
 		dataSource['x_pca'] = X_r_pca[:,0]
 		dataSource['y_pca'] = X_r_pca[:,1]
@@ -216,6 +252,12 @@ def visualize():
 		X_r_lda = lda.fit(train_x,train_y).transform(train_x)
 		comp_lda = lda.coef_
 		y_predict_lda = lda.predict(test_x)
+		try:
+			old_acc_lda = acc_lda
+		except UnboundLocalError:
+			old_acc_lda = 0
+		except NameError:
+			old_acc_lda = 0	
 		acc_lda = accuracy_score(test_y, y_predict_lda)
 		X_r_lda_test = lda.fit(test_x,y_predict_lda).transform(test_x)
 		dataSource['x_lda'] = X_r_lda[:,0]
@@ -241,6 +283,12 @@ def visualize():
 		X_r_random_test = randomProjection.transform(test_x)
 		clf.fit(X_r_random,train_y)
 		y_predict_random = clf.predict(X_r_random_test)
+		try:
+			old_acc_random = acc_random
+		except UnboundLocalError:
+			old_acc_random = 0
+		except NameError:
+			old_acc_random = 0
 		acc_random = accuracy_score(test_y, y_predict_random)	   
 		dataSource['x_random'] = X_r_random[:,0]
 		dataSource['y_random'] = X_r_random[:,1]
@@ -277,18 +325,20 @@ def visualize():
 		dataSource['x_mds'] = X_r_mds[:,0]
 		dataSource['y_mds'] = X_r_mds[:,1]
 
-
+	dataSource["label"]=train_y
+	dataSource_test["label"]=test_y
+		
 	source_points = ColumnDataSource(data=dataSource)
 	source_points_test = ColumnDataSource(data=dataSource_test)
 	   
 	g=[]
 	print("Plotting")
 	if "PCA" in vizs:
-		g.append(make_plot(source_points, source_points_test, comp_pca, train_x.columns, "PCA", acc_pca))
+		g.append(make_plot(source_points, source_points_test, comp_pca, train_x.columns, "PCA", acc_pca, old_acc_pca))
 	if "LDA" in vizs:
-		g.append(make_plot(source_points, source_points_test, comp_lda, train_x.columns, "LDA", acc_lda))
+		g.append(make_plot(source_points, source_points_test, comp_lda, train_x.columns, "LDA", acc_lda, old_acc_lda))
 	if "RANDOM" in vizs:	
-		g.append(make_plot(source_points, source_points_test, comp_random, train_x.columns, "RANDOM", acc_random))		
+		g.append(make_plot(source_points, source_points_test, comp_random, train_x.columns, "RANDOM", acc_random, old_acc_random))		
 	if "TSNE" in vizs:	
 		g.append(make_plot(source_points, source_points_test, method="TSNE", accuracy = 0))
 	if "MDS" in vizs:	
@@ -300,6 +350,6 @@ def visualize():
 	
 	
 if __name__ == '__main__':
-	app.run('10.71.176.149',port=5000, debug=True)
+	app.run('0.0.0.0',port=5000, debug=True)
 	
 
